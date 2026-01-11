@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>F1 | Brookhaven - Calendario Attività </title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  margin:0;
+}
+
+header {
+  background:#003366;
+  color:white;
+  text-align:center;
+  padding:1rem;
+}
+
+.manage-btn {
+  display:block;
+  margin:1rem auto;
+  padding:0.5rem 1rem;
+  background:#0055A5;
+  color:white;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.calendar-container {
+  max-width:900px;
+  margin:2rem auto;
+  background:white;
+  padding:1rem;
+  border-radius:8px;
+}
+
+.month-title {
+  text-align:center;
+  font-size:1.5rem;
+  margin-bottom:1rem;
+}
+
+.calendar {
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+}
+
+.day-header {
+  background:#0055A5;
+  color:white;
+  text-align:center;
+  padding:0.5rem;
+  font-weight:bold;
+}
+
+.day {
+  background:#e6f0ff;
+  height:80px;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding:5px;
+  cursor:pointer;
+  border-radius:4px;
+}
+
+.day:hover { background:#cce0ff; }
+
+.empty {
+  visibility:hidden;
+}
+
+/* Modal */
+.modal {
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+}
+
+.modal-content {
+  background:white;
+  max-width:400px;
+  margin:10% auto;
+  padding:1.5rem;
+  border-radius:8px;
+  position:relative;
+  text-align:center;
+}
+
+.close {
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:20px;
+  cursor:pointer;
+}
+
+button {
+  background:#0055A5;
+  color:white;
+  border:none;
+  padding:0.5rem 1rem;
+  border-radius:5px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<button class="manage-btn" id="manageBtn">Gestione</button>
+
+<header>
+  <h1>F1 | Brookhaven - Calendario Attività</h1>
+</header>
+
+<div class="calendar-container">
+  <div class="month-title">Gennaio 2026</div>
+
+  <div class="calendar" id="calendar">
+    <div class="day-header">Lun</div>
+    <div class="day-header">Mar</div>
+    <div class="day-header">Mer</div>
+    <div class="day-header">Gio</div>
+    <div class="day-header">Ven</div>
+    <div class="day-header">Sab</div>
+    <div class="day-header">Dom</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <span class="close" id="closeModal">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <p id="modalText"></p>
+    <button id="editBtn" style="display:none;">Modifica</button>
+  </div>
+</div>
+
+<script>
+let loggedIn = false;
+const USER = "pasqui";
+const PASS = "pasquii";
+
+document.getElementById("manageBtn").onclick = () => {
+  const u = prompt("Username:");
+  const p = prompt("Password:");
+  if(u===USER && p===PASS){
+    loggedIn = true;
+    alert("Accesso riuscito");
+  } else {
+    alert("Credenziali errate");
+  }
+};
+
+// Attività
+let activities = JSON.parse(localStorage.getItem("jan2026")) || {
+  1: "Briefing iniziale",
+  2: "Addestramento fisico",
+  3: "Tattica",
+  4: "Tiro",
+  5: "Marcia",
+  6: "Riposo",
+  7: "Riposo"
+};
+
+function save() {
+  localStorage.setItem("jan2026", JSON.stringify(activities));
+}
+
+// Generazione calendario
+const calendar = document.getElementById("calendar");
+const daysInMonth = 31;
+const firstDayIndex = 3; // Giovedì (Lun=0)
+
+// Celle vuote
+for(let i=0;i<firstDayIndex;i++){
+  const empty = document.createElement("div");
+  empty.className = "day empty";
+  calendar.appendChild(empty);
+}
+
+// Giorni
+for(let d=1; d<=daysInMonth; d++){
+  const day = document.createElement("div");
+  day.className = "day";
+  day.textContent = d;
+  day.dataset.day = d;
+  calendar.appendChild(day);
+}
+
+// Modal
+const modal = document.getElementById("modal");
+calendar.onclick = e => {
+  if(!e.target.classList.contains("day") || e.target.classList.contains("empty")) return;
+  const day = e.target.dataset.day;
+  modal.style.display = "block";
+  modalTitle.textContent = `Giorno ${day} Gennaio 2026`;
+  modalText.textContent = activities[day] || "Nessuna attività";
+  editBtn.style.display = loggedIn ? "inline-block" : "none";
+
+  editBtn.onclick = () => {
+    const val = prompt("Modifica attività:", activities[day] || "");
+    if(val!==null){
+      activities[day] = val;
+      modalText.textContent = val;
+      save();
+    }
+  };
+};
+
+closeModal.onclick = () => modal.style.display = "none";
+</script>
+
+</body>
+</html>
